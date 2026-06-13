@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { PublicGameState } from "@/lib/game/types";
 import { usePolledState } from "./use-polled-state";
 import { BoardGrid } from "./board-grid";
@@ -31,6 +32,16 @@ export function BoardView({ sessionId, initialState }: BoardViewProps) {
           <span className="hidden text-sm text-zinc-500 sm:block">
             Spymasters control the board
           </span>
+          <Link
+            href={`/game/${sessionId}`}
+            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-400 transition hover:border-white/25 hover:text-zinc-200"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+              <path d="M14 14h2v2h-2zM18 14h3M14 18h2M18 18h3v3M21 14v3"/>
+            </svg>
+            QR codes
+          </Link>
         </div>
         <ScoreBar
           counts={state.counts}
