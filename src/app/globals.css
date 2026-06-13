@@ -1,0 +1,166 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+
+:root {
+  --background: #0a0c12;
+  --foreground: #eef0f6;
+
+  --team-red: #ff5a60;
+  --team-red-deep: #b01016;
+  --team-blue: #5d8bff;
+  --team-blue-deep: #1640bd;
+  --neutral: #e7d4a8;
+  --assassin: #0a0a0c;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-team-red: var(--team-red);
+  --color-team-blue: var(--team-blue);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  min-height: 100dvh;
+  color: var(--foreground);
+  background:
+    radial-gradient(1100px 720px at 12% -8%, rgba(255, 90, 96, 0.14), transparent 58%),
+    radial-gradient(1100px 720px at 88% -8%, rgba(93, 139, 255, 0.16), transparent 58%),
+    radial-gradient(900px 700px at 50% 120%, rgba(93, 139, 255, 0.08), transparent 60%),
+    var(--background);
+  background-attachment: fixed;
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-white/10 bg-white/[0.04] shadow-xl shadow-black/30 backdrop-blur-md;
+  }
+
+  .brand {
+    font-family: var(--font-display), var(--font-geist-sans), sans-serif;
+    @apply font-bold tracking-tight;
+  }
+
+  /* Card faces ------------------------------------------------------ */
+  .card-face {
+    @apply relative flex select-none items-center justify-center overflow-hidden
+      rounded-xl px-1.5 text-center font-semibold uppercase leading-tight tracking-wide
+      shadow-lg shadow-black/25 ring-1 ring-inset ring-white/10 transition-all duration-200;
+  }
+
+  .face-cover {
+    background: linear-gradient(155deg, #f8f4ec, #e4d9c4);
+    color: #1b1714;
+  }
+  .face-red {
+    background: linear-gradient(155deg, #ff6b70, #be1118);
+    color: #fff;
+  }
+  .face-blue {
+    background: linear-gradient(155deg, #6f99ff, #1640bd);
+    color: #fff;
+  }
+  .face-neutral {
+    background: linear-gradient(155deg, #efe1bf, #d4bd8c);
+    color: #3a2f17;
+  }
+  .face-assassin {
+    background: radial-gradient(circle at 50% 28%, #2b2b33, #060608 75%);
+    color: #f3f3f6;
+    @apply ring-white/15;
+  }
+
+  .card-tappable {
+    @apply cursor-pointer hover:-translate-y-0.5 hover:shadow-xl hover:ring-white/40
+      active:translate-y-0 active:scale-[0.98];
+  }
+  .card-done {
+    @apply opacity-60 saturate-[0.85];
+  }
+
+  .animate-pop {
+    animation: cardPop 0.34s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  }
+}
+
+@keyframes cardPop {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.35;
+  }
+  60% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Spymaster layout: stacked on portrait, two columns on landscape ----- */
+.spy-layout {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "header"
+    "meta"
+    "status"
+    "board"
+    "actions"
+    "legend";
+}
+.spy-header {
+  grid-area: header;
+}
+.spy-meta {
+  grid-area: meta;
+}
+.spy-status {
+  grid-area: status;
+}
+.spy-board {
+  grid-area: board;
+}
+.spy-actions {
+  grid-area: actions;
+}
+.spy-legend {
+  grid-area: legend;
+}
+
+@media (orientation: landscape) {
+  .spy-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 20rem);
+    grid-template-areas:
+      "board header"
+      "board meta"
+      "board status"
+      "board actions"
+      "board legend";
+    align-items: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop {
+    animation: none;
+  }
+}
+
+/* HeroUI outline/ghost buttons default to dark text; make them legible on
+   the dark theme globally. */
+.button--outline {
+  color: var(--foreground);
+  border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+}
+.button--ghost {
+  color: var(--foreground);
+}
