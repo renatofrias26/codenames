@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import type { CardRole, DuetRole } from "@/lib/game/types";
 import { FitText } from "./fit-text";
 
@@ -52,6 +53,13 @@ export function BoardGrid({
   const interactive = Boolean(onReveal) && !disabled;
   const isBoard = size === "board";
 
+  // Track whether this is the initial mount to stagger card entrance only once
+  const mountedRef = useRef(false);
+  const isInitialMount = !mountedRef.current;
+  useEffect(() => {
+    mountedRef.current = true;
+  }, []);
+
   return (
     <div
       className={
@@ -60,7 +68,7 @@ export function BoardGrid({
           : "grid w-full grid-cols-5 gap-1.5 sm:gap-2"
       }
     >
-      {cards.map((card) => {
+      {cards.map((card, i) => {
         const clickable = interactive && !card.revealed;
         return (
           <button
@@ -68,8 +76,10 @@ export function BoardGrid({
             type="button"
             disabled={!clickable}
             onClick={clickable ? () => onReveal?.(card.id) : undefined}
+            style={isInitialMount ? { animationDelay: `${i * 22}ms` } : undefined}
             className={[
               "card-face",
+              isInitialMount ? "animate-stagger-in" : "",
               isBoard
                 ? "aspect-[3/2] text-sm sm:text-xl lg:text-2xl xl:text-3xl"
                 : "aspect-[4/3] min-h-12 text-[10px] sm:text-sm",

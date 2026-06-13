@@ -25,7 +25,7 @@ export default async function HubPage({ params }: HubPageProps) {
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-6">
-      <header className="flex flex-col items-center gap-3 text-center">
+      <header className="flex flex-col items-center gap-3 text-center animate-fade-in-up">
         <h1 className="brand text-3xl tracking-tight sm:text-4xl">
           {isDuet ? "Duet game ready" : "Game ready"}
         </h1>
@@ -36,13 +36,19 @@ export default async function HubPage({ params }: HubPageProps) {
         </p>
         <Link
           href={links.board.replace(/^https?:\/\/[^/]+/, "")}
-          className="mt-2 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3 font-semibold text-emerald-950 shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-400"
+          className="mt-2 inline-flex items-center gap-2 rounded-full bg-white/90 px-6 py-2.5 text-sm font-semibold text-zinc-900 shadow-lg backdrop-blur-sm transition hover:bg-white active:scale-95"
         >
-          📺 Open the board
+          Open the board
+          <svg viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5" aria-hidden="true">
+            <path d="M3 8a.75.75 0 0 1 .75-.75h6.19L8.22 5.53a.75.75 0 0 1 1.06-1.06l3 3a.75.75 0 0 1 0 1.06l-3 3a.75.75 0 0 1-1.06-1.06l1.72-1.72H3.75A.75.75 0 0 1 3 8Z" />
+          </svg>
         </Link>
       </header>
 
-      <section className="grid gap-5 sm:grid-cols-2">
+      <section
+        className="grid gap-5 sm:grid-cols-2 animate-fade-in-up"
+        style={{ animationDelay: "100ms" }}
+      >
         <QrCard
           title={isDuet ? "Player A" : "Red spymaster"}
           team="red"
@@ -57,7 +63,10 @@ export default async function HubPage({ params }: HubPageProps) {
         />
       </section>
 
-      <p className="text-center text-xs text-zinc-500">
+      <p
+        className="text-center text-xs text-zinc-500 animate-fade-in-up"
+        style={{ animationDelay: "200ms" }}
+      >
         {isDuet
           ? "Each player should open their own link — they see different key cards."
           : "Anyone with a spymaster link can see that team's key, so only share each QR code with its spymaster."}
