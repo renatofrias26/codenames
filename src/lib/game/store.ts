@@ -1,6 +1,6 @@
 import { Redis } from "@upstash/redis";
-import type { Game, GameStatus, TeamColor } from "./types";
-import { createBoard, createGame, createTimer } from "./setup";
+import type { Game, GameMode, GameStatus, TeamColor } from "./types";
+import { createBoard, createDuetBoard, createGame, createTimer } from "./setup";
 import { resolveRemainingMs } from "./selectors";
 
 export type TimerAction = "start" | "pause" | "reset";
@@ -58,10 +58,16 @@ function touch(game: Game): Game {
 }
 
 function recomputeStatus(game: Game): GameStatus {
-  const lastRevealed = game.lastRevealedRole;
-  if (lastRevealed === "assassin") {
+  if (game.lastRevealedRole === "assassin") {
+    if (game.mode === "duet") return "players-lose";
     const loser = game.currentTurn;
     return loser === "red" ? "blue-wins" : "red-wins";
+  }
+  if (game.mode === "duet") {
+    const allFound = game.cards
+      .filter((c) => c.duet?.a === "agent" || c.duet?.b === "agent")
+      .every((c) => c.revealed);
+    return allFound ? "players-win" : "playing";
   }
   const redLeft = game.cards.some((c) => c.role === "red" && !c.revealed);
   const blueLeft = game.cards.some((c) => c.role === "blue" && !c.revealed);
@@ -74,8 +80,8 @@ function recomputeStatus(game: Game): GameStatus {
 // Public async API (interface unchanged)
 // ---------------------------------------------------------------------------
 
-export async function createNewGame(): Promise<Game> {
-  const game = createGame();
+export async function createNewGame(mode: GameMode = "classic"): Promise<Game> {
+  const game = createGame(mode);
   await save(game);
   return game;
 }
@@ -96,7 +102,14 @@ export async function revealCard(
   if (!card || card.revealed) return game;
 
   card.revealed = true;
-  game.lastRevealedRole = card.role;
+
+  if (game.mode === "duet" && card.duet) {
+    // Assassin check from the active player's perspective.
+    const player = game.currentTurn === "red" ? "a" : "b";
+    game.lastRevealedRole = card.duet[player] === "assassin" ? "assassin" : undefined;
+  } else {
+    game.lastRevealedRole = card.role;
+  }
   game.status = recomputeStatus(game);
 
   if (game.status !== "playing") {
@@ -166,7 +179,8 @@ export async function resetGame(id: string): Promise<Game | null> {
   const game = await load(id);
   if (!game) return null;
 
-  const { cards, startingTeam } = createBoard();
+  const { cards, startingTeam } =
+    game.mode === "duet" ? createDuetBoard() : createBoard();
   game.cards = cards;
   game.startingTeam = startingTeam;
   game.currentTurn = startingTeam;

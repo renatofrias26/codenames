@@ -21,13 +21,18 @@ export default async function HubPage({ params }: HubPageProps) {
     toQrDataUrl(links.blue),
   ]);
 
+  const isDuet = game.mode === "duet";
+
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-6">
       <header className="flex flex-col items-center gap-3 text-center">
-        <h1 className="brand text-3xl tracking-tight sm:text-4xl">Game ready</h1>
+        <h1 className="brand text-3xl tracking-tight sm:text-4xl">
+          {isDuet ? "Duet game ready" : "Game ready"}
+        </h1>
         <p className="max-w-md text-sm text-zinc-400">
-          Open the board on your shared screen, then have each spymaster scan
-          their team&apos;s QR code on a phone. Keep this page private.
+          {isDuet
+            ? "Open the board on your shared screen, then each player scans their QR code."
+            : "Open the board on your shared screen, then have each spymaster scan their team's QR code on a phone. Keep this page private."}
         </p>
         <Link
           href={links.board.replace(/^https?:\/\/[^/]+/, "")}
@@ -39,13 +44,13 @@ export default async function HubPage({ params }: HubPageProps) {
 
       <section className="grid gap-5 sm:grid-cols-2">
         <QrCard
-          title="Red spymaster"
+          title={isDuet ? "Player A" : "Red spymaster"}
           team="red"
           qr={redQr}
           link={links.red}
         />
         <QrCard
-          title="Blue spymaster"
+          title={isDuet ? "Player B" : "Blue spymaster"}
           team="blue"
           qr={blueQr}
           link={links.blue}
@@ -53,8 +58,9 @@ export default async function HubPage({ params }: HubPageProps) {
       </section>
 
       <p className="text-center text-xs text-zinc-500">
-        Anyone with a spymaster link can see that team&apos;s key, so only share
-        each QR code with its spymaster.
+        {isDuet
+          ? "Each player should open their own link — they see different key cards."
+          : "Anyone with a spymaster link can see that team's key, so only share each QR code with its spymaster."}
       </p>
     </main>
   );

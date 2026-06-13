@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { getGame, isTeamTokenValid } from "@/lib/game/store";
+import { getGame } from "@/lib/game/store";
 import { toSpymasterState } from "@/lib/game/selectors";
 import type { TeamColor } from "@/lib/game/types";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   req: Request,
@@ -16,14 +18,14 @@ export async function GET(
     return NextResponse.json({ error: "Invalid team" }, { status: 400 });
   }
 
-  const valid = await isTeamTokenValid(sessionId, team, token);
-  if (!valid) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const game = await getGame(sessionId);
   if (!game) {
     return NextResponse.json({ error: "Game not found" }, { status: 404 });
+  }
+
+  const expected = team === "red" ? game.redToken : game.blueToken;
+  if (!token || token !== expected) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   return NextResponse.json(toSpymasterState(game, team));

@@ -76,6 +76,16 @@ body {
     color: #f3f3f6;
     @apply ring-white/15;
   }
+  /* Duet spymaster: agent card for this player */
+  .face-agent {
+    background: linear-gradient(155deg, #4ade80, #16a34a);
+    color: #052e16;
+  }
+  /* Duet board: a revealed card (agent found) */
+  .face-found {
+    background: linear-gradient(155deg, #34d399, #059669);
+    color: #022c22;
+  }
 
   .card-tappable {
     @apply cursor-pointer hover:-translate-y-0.5 hover:shadow-xl hover:ring-white/40

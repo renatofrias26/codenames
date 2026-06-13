@@ -1,17 +1,21 @@
 "use client";
 
-import type { GameCounts, GameStatus, TeamColor } from "@/lib/game/types";
+import type { GameCounts, GameMode, GameStatus, TeamColor } from "@/lib/game/types";
 
 interface ScoreBarProps {
   counts: GameCounts;
   currentTurn: TeamColor;
   status: GameStatus;
+  mode?: GameMode;
   size?: "board" | "compact";
 }
 
-function statusLabel(status: GameStatus, currentTurn: TeamColor): string {
+function statusLabel(status: GameStatus, currentTurn: TeamColor, mode: GameMode): string {
+  if (status === "players-win") return "You won! 🎉";
+  if (status === "players-lose") return "Game over";
   if (status === "red-wins") return "Red wins";
   if (status === "blue-wins") return "Blue wins";
+  if (mode === "duet") return `Player ${currentTurn === "red" ? "A" : "B"}'s turn`;
   return `${currentTurn === "red" ? "Red" : "Blue"} team's turn`;
 }
 
@@ -19,9 +23,53 @@ export function ScoreBar({
   counts,
   currentTurn,
   status,
+  mode = "classic",
   size = "compact",
 }: ScoreBarProps) {
   const over = status !== "playing";
+  const isBoard = size === "board";
+
+  if (mode === "duet") {
+    const found = (counts.agentTotal ?? 15) - (counts.agentRemaining ?? 0);
+    const total = counts.agentTotal ?? 15;
+    const pct = total > 0 ? (found / total) * 100 : 0;
+    const label = statusLabel(status, currentTurn, mode);
+    const turnColor =
+      status === "players-win"
+        ? "text-emerald-400"
+        : status === "players-lose"
+          ? "text-team-red"
+          : currentTurn === "red"
+            ? "text-emerald-300"
+            : "text-sky-300";
+
+    return (
+      <div className="flex w-full flex-col items-center gap-2">
+        <div className="flex w-full items-center justify-between gap-3">
+          <span className={["brand", isBoard ? "text-4xl sm:text-6xl" : "text-3xl", "text-emerald-400"].join(" ")}>
+            {found}
+            <span className={["text-zinc-500", isBoard ? "text-xl sm:text-2xl" : "text-base"].join(" ")}>
+              /{total}
+            </span>
+          </span>
+          <span className={["rounded-full px-3 py-1 font-semibold tracking-wide", isBoard ? "text-base sm:text-xl" : "text-xs", turnColor].join(" ")}>
+            {over ? (status === "players-win" ? "🏆 " : "💀 ") : ""}
+            {label}
+          </span>
+          <span className={["text-zinc-400", isBoard ? "text-sm" : "text-[10px]"].join(" ")}>
+            agents found
+          </span>
+        </div>
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+          <div
+            className="h-full rounded-full bg-emerald-400 transition-all duration-500"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex w-full items-stretch justify-between gap-2 sm:gap-4">
       <TeamScore
@@ -47,7 +95,7 @@ export function ScoreBar({
           ].join(" ")}
         >
           {over ? "🏆 " : ""}
-          {statusLabel(status, currentTurn)}
+          {statusLabel(status, currentTurn, mode)}
         </span>
       </div>
 

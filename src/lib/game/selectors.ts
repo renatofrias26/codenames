@@ -1,10 +1,12 @@
 import type {
   Card,
+  DuetRole,
   Game,
   GameCounts,
   PublicCard,
   PublicGameState,
   PublicTimer,
+  SpymasterCard,
   SpymasterGameState,
   TeamColor,
 } from "./types";
@@ -25,6 +27,21 @@ function countRole(cards: Card[], role: TeamColor) {
 }
 
 export function computeCounts(game: Game): GameCounts {
+  if (game.mode === "duet") {
+    const agentCards = game.cards.filter(
+      (c) => c.duet?.a === "agent" || c.duet?.b === "agent",
+    );
+    const agentTotal = agentCards.length;
+    const agentRemaining = agentCards.filter((c) => !c.revealed).length;
+    return {
+      redTotal: 0,
+      blueTotal: 0,
+      redRemaining: 0,
+      blueRemaining: 0,
+      agentTotal,
+      agentRemaining,
+    };
+  }
   const red = countRole(game.cards, "red");
   const blue = countRole(game.cards, "blue");
   return {
@@ -49,11 +66,13 @@ export function toPublicState(game: Game, now = Date.now()): PublicGameState {
     id: card.id,
     word: card.word,
     revealed: card.revealed,
-    role: card.revealed ? card.role : null,
+    // In duet, reveal only that the card was found (not which team/role).
+    role: card.revealed ? (game.mode === "duet" ? "found" : card.role) : null,
   }));
 
   return {
     id: game.id,
+    mode: game.mode,
     cards,
     startingTeam: game.startingTeam,
     currentTurn: game.currentTurn,
@@ -63,16 +82,36 @@ export function toPublicState(game: Game, now = Date.now()): PublicGameState {
   };
 }
 
-/** Spymaster projection: full card roles are always included. */
+/** Spymaster projection: roles shown from that player's perspective. */
 export function toSpymasterState(
   game: Game,
   team: TeamColor,
   now = Date.now(),
 ): SpymasterGameState {
+  let cards: SpymasterCard[];
+
+  if (game.mode === "duet") {
+    const player = team === "red" ? "a" : "b";
+    cards = game.cards.map((card) => ({
+      id: card.id,
+      word: card.word,
+      revealed: card.revealed,
+      role: (card.duet?.[player] ?? "bystander") as DuetRole,
+    }));
+  } else {
+    cards = game.cards.map((card) => ({
+      id: card.id,
+      word: card.word,
+      revealed: card.revealed,
+      role: card.role,
+    }));
+  }
+
   return {
     id: game.id,
+    mode: game.mode,
     team,
-    cards: game.cards.map((card) => ({ ...card })),
+    cards,
     startingTeam: game.startingTeam,
     currentTurn: game.currentTurn,
     status: game.status,

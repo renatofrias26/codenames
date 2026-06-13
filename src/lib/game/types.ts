@@ -1,13 +1,27 @@
 export type TeamColor = "red" | "blue";
 
-export type CardRole = "red" | "blue" | "neutral" | "assassin";
+/** Classic card role (red/blue/neutral/assassin) + 'found' for revealed duet cards on the public board. */
+export type CardRole = "red" | "blue" | "neutral" | "assassin" | "found";
 
-export type GameStatus = "playing" | "red-wins" | "blue-wins";
+/** Per-player role in Duet mode. */
+export type DuetRole = "agent" | "assassin" | "bystander";
+
+export type GameMode = "classic" | "duet";
+
+export type GameStatus =
+  | "playing"
+  | "red-wins"
+  | "blue-wins"
+  | "players-win"   // duet: all agents revealed
+  | "players-lose"; // duet: assassin triggered
 
 export interface Card {
   id: string;
   word: string;
+  /** Used in classic mode. Set to "neutral" for all duet cards. */
   role: CardRole;
+  /** Present only in duet mode: the role from each player's perspective. */
+  duet?: { a: DuetRole; b: DuetRole };
   revealed: boolean;
 }
 
@@ -24,6 +38,7 @@ export interface TimerState {
 
 export interface Game {
   id: string;
+  mode: GameMode;
   cards: Card[];
   startingTeam: TeamColor;
   currentTurn: TeamColor;
@@ -50,6 +65,10 @@ export interface GameCounts {
   blueTotal: number;
   redRemaining: number;
   blueRemaining: number;
+  /** Duet only: total agent cards (both players combined). */
+  agentTotal?: number;
+  /** Duet only: remaining unrevealed agents. */
+  agentRemaining?: number;
 }
 
 export interface PublicTimer {
@@ -61,6 +80,7 @@ export interface PublicTimer {
 
 export interface PublicGameState {
   id: string;
+  mode: GameMode;
   cards: PublicCard[];
   startingTeam: TeamColor;
   currentTurn: TeamColor;
@@ -69,8 +89,19 @@ export interface PublicGameState {
   timer: PublicTimer;
 }
 
-/** Spymaster view: full card roles are always visible. */
+/**
+ * Card as seen by a specific spymaster.
+ * Classic: role is a CardRole. Duet: role is a DuetRole (agent/assassin/bystander).
+ */
+export interface SpymasterCard {
+  id: string;
+  word: string;
+  revealed: boolean;
+  role: CardRole | DuetRole;
+}
+
+/** Spymaster view: role visible from that player's perspective. */
 export interface SpymasterGameState extends Omit<PublicGameState, "cards"> {
   team: TeamColor;
-  cards: Card[];
+  cards: SpymasterCard[];
 }

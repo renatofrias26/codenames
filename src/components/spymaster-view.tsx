@@ -32,6 +32,10 @@ export function SpymasterView({
   const isMyTurn = state.currentTurn === team && state.status === "playing";
   const over = state.status !== "playing";
   const timerRunning = state.timer.running;
+  const isDuet = state.mode === "duet";
+  const playerLabel = isDuet
+    ? `Player ${team === "red" ? "A" : "B"}`
+    : `${team} spymaster`;
 
   const post = useCallback(
     async (path: string, body?: unknown) => {
@@ -61,7 +65,7 @@ export function SpymasterView({
               team === "red" ? "text-team-red" : "text-team-blue",
             ].join(" ")}
           >
-            {team} spymaster
+            {playerLabel}
           </span>
           <span className="text-[10px] uppercase tracking-wide text-zinc-500">
             🤫 Keep this screen hidden
@@ -81,6 +85,7 @@ export function SpymasterView({
           counts={state.counts}
           currentTurn={state.currentTurn}
           status={state.status}
+          mode={state.mode}
         />
         <div className="flex items-center justify-center gap-3">
           <TimerDisplay timer={state.timer} />
@@ -136,7 +141,7 @@ export function SpymasterView({
         />
       </div>
 
-      <Legend className="spy-legend" />
+      <Legend isDuet={isDuet} className="spy-legend" />
 
       <div className="spy-actions flex gap-2">
         {timerRunning ? (
@@ -170,13 +175,19 @@ export function SpymasterView({
   );
 }
 
-function Legend({ className }: { className?: string }) {
-  const items: { label: string; className: string }[] = [
+function Legend({ isDuet, className }: { isDuet: boolean; className?: string }) {
+  const classicItems = [
     { label: "Red", className: "face-red" },
     { label: "Blue", className: "face-blue" },
     { label: "Neutral", className: "face-neutral" },
     { label: "Assassin", className: "face-assassin" },
   ];
+  const duetItems = [
+    { label: "Agent", className: "face-agent" },
+    { label: "Assassin", className: "face-assassin" },
+    { label: "Bystander", className: "face-neutral" },
+  ];
+  const items = isDuet ? duetItems : classicItems;
   return (
     <div
       className={[

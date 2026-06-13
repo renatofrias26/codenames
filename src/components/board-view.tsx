@@ -48,6 +48,7 @@ export function BoardView({ sessionId, initialState }: BoardViewProps) {
           counts={state.counts}
           currentTurn={state.currentTurn}
           status={state.status}
+          mode={state.mode}
           size="board"
         />
         {error && <p className="text-sm text-amber-400">{error}</p>}

@@ -1,13 +1,15 @@
 "use client";
 
-import type { CardRole } from "@/lib/game/types";
+import type { CardRole, DuetRole } from "@/lib/game/types";
 import { FitText } from "./fit-text";
+
+export type AnyRole = CardRole | DuetRole;
 
 export interface BoardCard {
   id: string;
   word: string;
   revealed: boolean;
-  role: CardRole | null;
+  role: AnyRole | null;
 }
 
 interface BoardGridProps {
@@ -18,11 +20,16 @@ interface BoardGridProps {
   disabled?: boolean;
 }
 
-const FACE_CLASS: Record<CardRole, string> = {
+const FACE_CLASS: Record<AnyRole, string> = {
+  // Classic
   red: "face-red",
   blue: "face-blue",
   neutral: "face-neutral",
   assassin: "face-assassin",
+  found: "face-found",
+  // Duet spymaster
+  agent: "face-agent",
+  bystander: "face-neutral",
 };
 
 function faceClasses(card: BoardCard, mode: "public" | "spymaster"): string {

@@ -18,7 +18,28 @@ export default function Home() {
         </p>
       </div>
 
-      <CreateGameButton />
+      <div className="grid w-full max-w-lg gap-4 sm:grid-cols-2">
+        <div className="panel flex flex-col gap-3 p-5 text-left">
+          <div className="flex flex-col gap-1">
+            <span className="brand text-lg text-zinc-200">Classic</span>
+            <span className="text-xs text-zinc-400">
+              Two teams, 4+ players. Red vs Blue — first to find all their
+              agents wins.
+            </span>
+          </div>
+          <CreateGameButton mode="classic" />
+        </div>
+        <div className="panel flex flex-col gap-3 p-5 text-left ring-emerald-500/20">
+          <div className="flex flex-col gap-1">
+            <span className="brand text-lg text-emerald-400">Duet</span>
+            <span className="text-xs text-zinc-400">
+              Cooperative, 2 players. Work together to find all 15 agents
+              before hitting an assassin.
+            </span>
+          </div>
+          <CreateGameButton mode="duet" variant="secondary" />
+        </div>
+      </div>
 
       <ol className="grid w-full max-w-xl gap-3 text-left sm:grid-cols-3">
         {[

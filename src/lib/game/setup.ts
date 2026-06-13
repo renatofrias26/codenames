@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import type { Card, CardRole, Game, TeamColor, TimerState } from "./types";
+import type { Card, CardRole, DuetRole, Game, GameMode, TeamColor, TimerState } from "./types";
 import { WORD_LIST } from "./words";
 
 export const BOARD_SIZE = 25;
@@ -51,11 +51,50 @@ export function createTimer(seconds = DEFAULT_TURN_SECONDS): TimerState {
   };
 }
 
-export function createGame(): Game {
-  const { cards, startingTeam } = createBoard();
+/**
+ * Duet distribution (25 cards, each player sees 9 agents + 3 assassins):
+ *  3  both-agent
+ *  4  A-agent / B-bystander
+ *  4  B-agent / A-bystander
+ *  2  A-agent / B-assassin
+ *  2  B-agent / A-assassin
+ *  1  both-assassin
+ *  9  both-bystander
+ * ──
+ * 25  total
+ */
+export function createDuetBoard(): { cards: Card[]; startingTeam: TeamColor } {
+  const startingTeam: TeamColor = Math.random() < 0.5 ? "red" : "blue";
+  const words = shuffle(WORD_LIST).slice(0, BOARD_SIZE);
+
+  const duetRoles: { a: DuetRole; b: DuetRole }[] = shuffle([
+    ...Array.from({ length: 3 }, () => ({ a: "agent" as DuetRole, b: "agent" as DuetRole })),
+    ...Array.from({ length: 4 }, () => ({ a: "agent" as DuetRole, b: "bystander" as DuetRole })),
+    ...Array.from({ length: 4 }, () => ({ a: "bystander" as DuetRole, b: "agent" as DuetRole })),
+    ...Array.from({ length: 2 }, () => ({ a: "agent" as DuetRole, b: "assassin" as DuetRole })),
+    ...Array.from({ length: 2 }, () => ({ a: "assassin" as DuetRole, b: "agent" as DuetRole })),
+    ...Array.from({ length: 1 }, () => ({ a: "assassin" as DuetRole, b: "assassin" as DuetRole })),
+    ...Array.from({ length: 9 }, () => ({ a: "bystander" as DuetRole, b: "bystander" as DuetRole })),
+  ]);
+
+  const cards: Card[] = words.map((word, i) => ({
+    id: nanoid(8),
+    word,
+    role: "neutral" as CardRole, // unused in duet; duet field is authoritative
+    duet: duetRoles[i],
+    revealed: false,
+  }));
+
+  return { cards, startingTeam };
+}
+
+export function createGame(mode: GameMode = "classic"): Game {
+  const { cards, startingTeam } =
+    mode === "duet" ? createDuetBoard() : createBoard();
   const now = Date.now();
   return {
     id: nanoid(10),
+    mode,
     cards,
     startingTeam,
     currentTurn: startingTeam,
