@@ -1,5 +1,7 @@
+import type { GameLanguage } from "./types";
+
 /**
- * Default word pool for generating Codenames boards.
+ * English word pool for generating Codenames boards.
  * Single words, uppercased at render time.
  */
 export const WORD_LIST: string[] = [
@@ -54,3 +56,60 @@ export const WORD_LIST: string[] = [
   "Washington", "Watch", "Water", "Wave", "Web", "Well", "Whale", "Whip",
   "Wind", "Witch", "Worm", "Yard",
 ];
+
+/**
+ * Portuguese word pool for generating Codenames boards.
+ * Single words, uppercased at render time.
+ */
+export const WORD_LIST_PT: string[] = [
+  "Abelha", "Abóbora", "Açúcar", "Água", "Águia", "Agulha", "Alho", "Aliança",
+  "Alma", "Âncora", "Anel", "Anjo", "Ano", "Aranha", "Areia", "Arma", "Arroz",
+  "Asa", "Astronauta", "Atlântico", "Avião", "Avô", "Bala", "Balão", "Banana",
+  "Banco", "Bandeira", "Banho", "Barba", "Barco", "Barata", "Bateria", "Beijo",
+  "Bicho", "Bigode", "Boca", "Bola", "Bolha", "Bolo", "Bomba", "Borboleta",
+  "Bota", "Braço", "Brasil", "Bruxa", "Bússola", "Cabeça", "Cabelo", "Cabra",
+  "Caça", "Cachorro", "Café", "Caixa", "Calo", "Cama", "Câmera", "Caminho",
+  "Campo", "Cana", "Caneta", "Canguru", "Cano", "Capa", "Capital", "Cara",
+  "Caracol", "Carne", "Carro", "Carta", "Casa", "Casaco", "Castelo", "Cavalo",
+  "Cebola", "Cobra", "Coelho", "Cogumelo", "Cola", "Colher", "Coluna", "Comédia",
+  "Concha", "Coração", "Coroa", "Corpo", "Corrente", "Costa", "Couro", "Cobre",
+  "Coxa", "Cravo", "Cruz", "Cubo", "Curva", "Dado", "Dança", "Data", "Dedo",
+  "Dente", "Deserto", "Diamante", "Dinossauro", "Disco", "Doutor", "Dragão",
+  "Égua", "Elefante", "Escada", "Escola", "Escudo", "Esfera", "Espada", "Espelho",
+  "Espião", "Espinho", "Estação", "Estrela", "Fada", "Faca", "Falcão", "Fantasma",
+  "Farol", "Febre", "Feijão", "Ferro", "Festa", "Figura", "Fila", "Filme",
+  "Fivela", "Flecha", "Flor", "Floresta", "Fogo", "Folha", "Fonte", "Força",
+  "Forno", "Foto", "Fralda", "França", "Fruta", "Fumo", "Gaita", "Galo",
+  "Garfo", "Garrafa", "Gato", "Gelo", "Gigante", "Fita", "Globo", "Gola",
+  "Golfinho", "Gota", "Grade", "Grama", "Guarda", "Hospital", "Igreja", "Ilha",
+  "Índia", "Jacaré", "Janela", "Jardim", "Jogo", "Joia", "Laço", "Lago",
+  "Lápis", "Laranja", "Leão", "Leite", "Lenço", "Letra", "Limão", "Língua",
+  "Linha", "Lixo", "Lobo", "Luva", "Maçã", "Madeira", "Mala", "Mancha",
+  "Mapa", "Máquina", "Mar", "Marte", "Máscara", "Médico", "Mel", "Mesa",
+  "Mesopotâmia", "Mina", "Mochila", "Moeda", "Mola", "Montanha", "Morcego",
+  "Mosca", "Lontra", "Motor", "Muro", "Música", "Nariz", "Navio", "Neve",
+  "Ninja", "Noite", "Nota", "Nuvem", "Óculos", "Olho", "Onda", "Osso", "Ouro",
+  "Ovo", "Padre", "País", "Palco", "Palha", "Palma", "Pão", "Papel", "Parque",
+  "Pato", "Peixe", "Pena", "Pente", "Pera", "Pessoa", "Pé", "Pedra", "Piano",
+  "Picareta", "Pilha", "Pino", "Pintor", "Pirata", "Pomar", "Planta", "Plástico",
+  "Pluto", "Pneu", "Polvo", "Ponte", "Ponto", "Porta", "Porto", "Praia",
+  "Prato", "Prego", "Princesa", "Quadro", "Queda", "Queijo", "Raiz", "Rainha",
+  "Rato", "Rede", "Rei", "Relógio", "Rio", "Robô", "Rocha", "Roda", "Rolha",
+  "Roma", "Rosa", "Roupa", "Sal", "Sapo", "Saia", "Selo", "Sereia", "Serra",
+  "Sino", "Sol", "Soldado", "Sombra", "Sopa", "Tambor", "Tanque", "Tatu",
+  "Teatro", "Teia", "Tela", "Telefone", "Tempo", "Tenda", "Terra", "Tesoura",
+  "Teto", "Tigre", "Tinta", "Tomada", "Touro", "Trator", "Trem", "Tronco",
+  "Túnel", "Urso", "Vaca", "Vassoura", "Vela", "Veia", "Vento", "Verão",
+  "Vidro", "Vinho", "Violão", "Vulcão", "Zebra",
+];
+
+/** All available word pools keyed by language. */
+export const WORD_LISTS: Record<GameLanguage, string[]> = {
+  en: WORD_LIST,
+  pt: WORD_LIST_PT,
+};
+
+/** Return the word pool for a given language (falls back to English). */
+export function getWordList(language: GameLanguage): string[] {
+  return WORD_LISTS[language] ?? WORD_LIST;
+}

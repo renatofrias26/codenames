@@ -73,6 +73,7 @@ export function toPublicState(game: Game, now = Date.now()): PublicGameState {
   return {
     id: game.id,
     mode: game.mode,
+    language: game.language ?? "en",
     cards,
     startingTeam: game.startingTeam,
     currentTurn: game.currentTurn,
@@ -110,6 +111,7 @@ export function toSpymasterState(
   return {
     id: game.id,
     mode: game.mode,
+    language: game.language ?? "en",
     team,
     cards,
     startingTeam: game.startingTeam,

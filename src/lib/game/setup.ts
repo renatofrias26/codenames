@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
-import type { Card, CardRole, DuetRole, Game, GameMode, TeamColor, TimerState } from "./types";
-import { WORD_LIST } from "./words";
+import type { Card, CardRole, DuetRole, Game, GameLanguage, GameMode, TeamColor, TimerState } from "./types";
+import { getWordList } from "./words";
 
 export const BOARD_SIZE = 25;
 export const DEFAULT_TURN_SECONDS = 120;
@@ -26,9 +26,11 @@ function buildRoleDeck(startingTeam: TeamColor): CardRole[] {
   return shuffle(roles);
 }
 
-export function createBoard(): { cards: Card[]; startingTeam: TeamColor } {
+export function createBoard(
+  language: GameLanguage = "en",
+): { cards: Card[]; startingTeam: TeamColor } {
   const startingTeam: TeamColor = Math.random() < 0.5 ? "red" : "blue";
-  const words = shuffle(WORD_LIST).slice(0, BOARD_SIZE);
+  const words = shuffle(getWordList(language)).slice(0, BOARD_SIZE);
   const roles = buildRoleDeck(startingTeam);
 
   const cards: Card[] = words.map((word, index) => ({
@@ -63,9 +65,11 @@ export function createTimer(seconds = DEFAULT_TURN_SECONDS): TimerState {
  * ──
  * 25  total
  */
-export function createDuetBoard(): { cards: Card[]; startingTeam: TeamColor } {
+export function createDuetBoard(
+  language: GameLanguage = "en",
+): { cards: Card[]; startingTeam: TeamColor } {
   const startingTeam: TeamColor = Math.random() < 0.5 ? "red" : "blue";
-  const words = shuffle(WORD_LIST).slice(0, BOARD_SIZE);
+  const words = shuffle(getWordList(language)).slice(0, BOARD_SIZE);
 
   const duetRoles: { a: DuetRole; b: DuetRole }[] = shuffle([
     ...Array.from({ length: 3 }, () => ({ a: "agent" as DuetRole, b: "agent" as DuetRole })),
@@ -88,13 +92,17 @@ export function createDuetBoard(): { cards: Card[]; startingTeam: TeamColor } {
   return { cards, startingTeam };
 }
 
-export function createGame(mode: GameMode = "classic"): Game {
+export function createGame(
+  mode: GameMode = "classic",
+  language: GameLanguage = "en",
+): Game {
   const { cards, startingTeam } =
-    mode === "duet" ? createDuetBoard() : createBoard();
+    mode === "duet" ? createDuetBoard(language) : createBoard(language);
   const now = Date.now();
   return {
     id: nanoid(10),
     mode,
+    language,
     cards,
     startingTeam,
     currentTurn: startingTeam,

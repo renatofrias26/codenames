@@ -1,5 +1,5 @@
 import { Redis } from "@upstash/redis";
-import type { Game, GameMode, GameStatus, TeamColor } from "./types";
+import type { Game, GameLanguage, GameMode, GameStatus, TeamColor } from "./types";
 import { createBoard, createDuetBoard, createGame, createTimer } from "./setup";
 import { resolveRemainingMs } from "./selectors";
 
@@ -80,8 +80,11 @@ function recomputeStatus(game: Game): GameStatus {
 // Public async API (interface unchanged)
 // ---------------------------------------------------------------------------
 
-export async function createNewGame(mode: GameMode = "classic"): Promise<Game> {
-  const game = createGame(mode);
+export async function createNewGame(
+  mode: GameMode = "classic",
+  language: GameLanguage = "en",
+): Promise<Game> {
+  const game = createGame(mode, language);
   await save(game);
   return game;
 }
@@ -180,7 +183,9 @@ export async function resetGame(id: string): Promise<Game | null> {
   if (!game) return null;
 
   const { cards, startingTeam } =
-    game.mode === "duet" ? createDuetBoard() : createBoard();
+    game.mode === "duet"
+      ? createDuetBoard(game.language)
+      : createBoard(game.language);
   game.cards = cards;
   game.startingTeam = startingTeam;
   game.currentTurn = startingTeam;

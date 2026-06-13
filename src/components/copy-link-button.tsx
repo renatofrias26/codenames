@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { Button } from "@heroui/react";
 
-export function CopyLinkButton({ value }: { value: string }) {
+export function CopyLinkButton({
+  value,
+  copyLabel = "Copy link",
+  copiedLabel = "Copied!",
+}: {
+  value: string;
+  copyLabel?: string;
+  copiedLabel?: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -18,7 +26,7 @@ export function CopyLinkButton({ value }: { value: string }) {
 
   return (
     <Button size="sm" variant="outline" onPress={() => void copy()}>
-      {copied ? "Copied!" : "Copy link"}
+      {copied ? copiedLabel : copyLabel}
     </Button>
   );
 }

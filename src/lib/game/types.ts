@@ -8,6 +8,9 @@ export type DuetRole = "agent" | "assassin" | "bystander";
 
 export type GameMode = "classic" | "duet";
 
+/** Language used for the board's word list (and the in-game UI). */
+export type GameLanguage = "en" | "pt";
+
 export type GameStatus =
   | "playing"
   | "red-wins"
@@ -39,6 +42,7 @@ export interface TimerState {
 export interface Game {
   id: string;
   mode: GameMode;
+  language: GameLanguage;
   cards: Card[];
   startingTeam: TeamColor;
   currentTurn: TeamColor;
@@ -81,6 +85,7 @@ export interface PublicTimer {
 export interface PublicGameState {
   id: string;
   mode: GameMode;
+  language: GameLanguage;
   cards: PublicCard[];
   startingTeam: TeamColor;
   currentTurn: TeamColor;

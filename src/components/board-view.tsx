@@ -6,6 +6,7 @@ import { usePolledState } from "./use-polled-state";
 import { BoardGrid } from "./board-grid";
 import { ScoreBar } from "./score-bar";
 import { TimerDisplay } from "./timer-display";
+import { t } from "@/lib/i18n";
 import {
   DisplayModeMenu,
   useDisplayMode,
@@ -29,6 +30,7 @@ export function BoardView({ sessionId, initialState }: BoardViewProps) {
   const [displayMode, setDisplayMode] = useDisplayMode();
   const layoutClass = useResolvedLayout(displayMode);
   const isSidebar = layoutClass === "is-compact";
+  const m = t(state.language);
 
   return (
     <div className={`board-layout ${layoutClass}`}>
@@ -51,9 +53,9 @@ export function BoardView({ sessionId, initialState }: BoardViewProps) {
               <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
               <path d="M14 14h2v2h-2zM18 14h3M14 18h2M18 18h3v3M21 14v3"/>
             </svg>
-            <span className="board-qr-label">QR codes</span>
+            <span className="board-qr-label">{m.display.qrCodes}</span>
           </Link>
-          <DisplayModeMenu mode={displayMode} onChange={setDisplayMode} />
+          <DisplayModeMenu mode={displayMode} onChange={setDisplayMode} language={state.language} />
         </div>
 
         <div className="board-score">
@@ -62,6 +64,7 @@ export function BoardView({ sessionId, initialState }: BoardViewProps) {
             currentTurn={state.currentTurn}
             status={state.status}
             mode={state.mode}
+            language={state.language}
             size="board"
             variant={isSidebar ? "sidebar" : "bar"}
           />

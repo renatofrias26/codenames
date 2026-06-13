@@ -1,25 +1,39 @@
 "use client";
 
-import type { GameCounts, GameMode, GameStatus, TeamColor } from "@/lib/game/types";
+import type {
+  GameCounts,
+  GameLanguage,
+  GameMode,
+  GameStatus,
+  TeamColor,
+} from "@/lib/game/types";
+import { fmt, t } from "@/lib/i18n";
 
 interface ScoreBarProps {
   counts: GameCounts;
   currentTurn: TeamColor;
   status: GameStatus;
   mode?: GameMode;
+  language?: GameLanguage;
   size?: "board" | "compact";
   /** "bar" = wide horizontal layout (portrait / TV top bar);
    *  "sidebar" = vertical stacked layout (phone-landscape narrow column). */
   variant?: "bar" | "sidebar";
 }
 
-function statusLabel(status: GameStatus, currentTurn: TeamColor, mode: GameMode): string {
-  if (status === "players-win") return "You won! 🎉";
-  if (status === "players-lose") return "Game over";
-  if (status === "red-wins") return "Red wins";
-  if (status === "blue-wins") return "Blue wins";
-  if (mode === "duet") return `Player ${currentTurn === "red" ? "A" : "B"}'s turn`;
-  return `${currentTurn === "red" ? "Red" : "Blue"} team's turn`;
+function statusLabel(
+  status: GameStatus,
+  currentTurn: TeamColor,
+  mode: GameMode,
+  language: GameLanguage,
+): string {
+  const s = t(language).score;
+  if (status === "players-win") return s.youWon;
+  if (status === "players-lose") return s.gameOver;
+  if (status === "red-wins") return s.redWins;
+  if (status === "blue-wins") return s.blueWins;
+  if (mode === "duet") return currentTurn === "red" ? s.playerATurn : s.playerBTurn;
+  return currentTurn === "red" ? s.redTurn : s.blueTurn;
 }
 
 export function ScoreBar({
@@ -27,11 +41,13 @@ export function ScoreBar({
   currentTurn,
   status,
   mode = "classic",
+  language = "en",
   size = "compact",
   variant = "bar",
 }: ScoreBarProps) {
   const over = status !== "playing";
   const isBoard = size === "board";
+  const m = t(language).score;
 
   if (variant === "sidebar") {
     return (
@@ -40,6 +56,7 @@ export function ScoreBar({
         currentTurn={currentTurn}
         status={status}
         mode={mode}
+        language={language}
       />
     );
   }
@@ -48,7 +65,7 @@ export function ScoreBar({
     const found = (counts.agentTotal ?? 15) - (counts.agentRemaining ?? 0);
     const total = counts.agentTotal ?? 15;
     const pct = total > 0 ? (found / total) * 100 : 0;
-    const label = statusLabel(status, currentTurn, mode);
+    const label = statusLabel(status, currentTurn, mode, language);
     const turnColor =
       status === "players-win"
         ? "text-emerald-400"
@@ -72,7 +89,7 @@ export function ScoreBar({
             {label}
           </span>
           <span className={["text-zinc-400", isBoard ? "text-sm" : "text-[10px]"].join(" ")}>
-            agents found
+            {m.agents}
           </span>
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
@@ -93,6 +110,7 @@ export function ScoreBar({
         total={counts.redTotal}
         active={!over && currentTurn === "red"}
         size={size}
+        language={language}
       />
 
       <div className="flex flex-1 flex-col items-center justify-center text-center">
@@ -110,7 +128,7 @@ export function ScoreBar({
           ].join(" ")}
         >
           {over ? "🏆 " : ""}
-          {statusLabel(status, currentTurn, mode)}
+          {statusLabel(status, currentTurn, mode, language)}
         </span>
       </div>
 
@@ -120,6 +138,7 @@ export function ScoreBar({
         total={counts.blueTotal}
         active={!over && currentTurn === "blue"}
         size={size}
+        language={language}
       />
     </div>
   );
@@ -131,15 +150,18 @@ function TeamScore({
   total,
   active,
   size,
+  language,
 }: {
   color: TeamColor;
   remaining: number;
   total: number;
   active: boolean;
   size: "board" | "compact";
+  language: GameLanguage;
 }) {
   const isRed = color === "red";
   const isBoard = size === "board";
+  const m = t(language).score;
   return (
     <div
       className={[
@@ -171,7 +193,7 @@ function TeamScore({
             isRed ? "text-team-red" : "text-team-blue",
           ].join(" ")}
         >
-          {color}
+          {isRed ? m.red : m.blue}
         </span>
         <span
           className={[
@@ -179,7 +201,7 @@ function TeamScore({
             isBoard ? "text-xs sm:text-sm" : "text-[9px]",
           ].join(" ")}
         >
-          of {total} left
+          {fmt(m.ofLeft, total)}
         </span>
       </span>
     </div>
@@ -195,14 +217,17 @@ function SidebarScore({
   currentTurn,
   status,
   mode,
+  language,
 }: {
   counts: GameCounts;
   currentTurn: TeamColor;
   status: GameStatus;
   mode: GameMode;
+  language: GameLanguage;
 }) {
   const over = status !== "playing";
-  const label = statusLabel(status, currentTurn, mode);
+  const label = statusLabel(status, currentTurn, mode, language);
+  const m = t(language).score;
 
   if (mode === "duet") {
     const total = counts.agentTotal ?? 15;
@@ -231,7 +256,7 @@ function SidebarScore({
             <span className="text-xl text-zinc-500">/{total}</span>
           </span>
           <span className="pb-1 text-[10px] uppercase tracking-wide text-zinc-400">
-            agents
+            {m.agents}
           </span>
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
@@ -270,12 +295,14 @@ function SidebarScore({
         remaining={counts.redRemaining}
         total={counts.redTotal}
         active={!over && currentTurn === "red"}
+        language={language}
       />
       <SidebarTeamRow
         color="blue"
         remaining={counts.blueRemaining}
         total={counts.blueTotal}
         active={!over && currentTurn === "blue"}
+        language={language}
       />
     </div>
   );
@@ -286,13 +313,16 @@ function SidebarTeamRow({
   remaining,
   total,
   active,
+  language,
 }: {
   color: TeamColor;
   remaining: number;
   total: number;
   active: boolean;
+  language: GameLanguage;
 }) {
   const isRed = color === "red";
+  const m = t(language).score;
   return (
     <div
       className={[
@@ -321,10 +351,10 @@ function SidebarTeamRow({
             isRed ? "text-team-red" : "text-team-blue",
           ].join(" ")}
         >
-          {color}
+          {isRed ? m.red : m.blue}
         </span>
         <span className="text-[10px] uppercase tracking-wide text-zinc-400">
-          of {total} left
+          {fmt(m.ofLeft, total)}
         </span>
       </div>
       <span

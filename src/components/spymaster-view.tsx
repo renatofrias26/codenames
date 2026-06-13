@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { Button } from "@heroui/react";
 import type { SpymasterGameState, TeamColor } from "@/lib/game/types";
+import { t } from "@/lib/i18n";
 import { usePolledState } from "./use-polled-state";
 import { BoardGrid } from "./board-grid";
 import { ScoreBar } from "./score-bar";
@@ -33,9 +34,14 @@ export function SpymasterView({
   const over = state.status !== "playing";
   const timerRunning = state.timer.running;
   const isDuet = state.mode === "duet";
+  const m = t(state.language);
   const playerLabel = isDuet
-    ? `Player ${team === "red" ? "A" : "B"}`
-    : `${team} spymaster`;
+    ? team === "red"
+      ? m.common.playerA
+      : m.common.playerB
+    : team === "red"
+      ? m.common.redSpymaster
+      : m.common.blueSpymaster;
 
   const post = useCallback(
     async (path: string, body?: unknown) => {
@@ -68,7 +74,7 @@ export function SpymasterView({
             {playerLabel}
           </span>
           <span className="text-[10px] uppercase tracking-wide text-zinc-500">
-            🤫 Keep this screen hidden
+            {m.spy.keepHidden}
           </span>
         </div>
         <Button
@@ -76,7 +82,7 @@ export function SpymasterView({
           variant="secondary"
           onPress={() => void post("/reset")}
         >
-          New game
+          {m.spy.newGame}
         </Button>
       </header>
 
@@ -86,6 +92,7 @@ export function SpymasterView({
           currentTurn={state.currentTurn}
           status={state.status}
           mode={state.mode}
+          language={state.language}
         />
         <div className="flex items-center justify-center gap-3">
           <TimerDisplay timer={state.timer} />
@@ -93,7 +100,7 @@ export function SpymasterView({
             size="sm"
             variant="secondary"
             isIconOnly
-            aria-label="Reset timer"
+            aria-label={m.spy.resetTimer}
             onPress={() => void post("/timer", { action: "reset" })}
           >
             <svg
@@ -126,10 +133,10 @@ export function SpymasterView({
         {error
           ? error
           : over
-            ? "Game over — tap New game to play again."
+            ? m.spy.gameOverHint
             : isMyTurn
-              ? "Your turn — tap a card to reveal it on the board."
-              : "Waiting for the other team…"}
+              ? m.spy.yourTurnHint
+              : m.spy.waiting}
       </p>
 
       <div className="spy-board flex items-start justify-center">
@@ -141,7 +148,7 @@ export function SpymasterView({
         />
       </div>
 
-      <Legend isDuet={isDuet} className="spy-legend" />
+      <Legend isDuet={isDuet} language={state.language} className="spy-legend" />
 
       <div className="spy-actions flex gap-2">
         {timerRunning ? (
@@ -150,7 +157,7 @@ export function SpymasterView({
             variant="secondary"
             onPress={() => void post("/timer", { action: "pause" })}
           >
-            Pause timer
+            {m.spy.pauseTimer}
           </Button>
         ) : (
           <Button
@@ -159,7 +166,7 @@ export function SpymasterView({
             isDisabled={over}
             onPress={() => void post("/timer", { action: "start" })}
           >
-            Start timer
+            {m.spy.startTimer}
           </Button>
         )}
         <Button
@@ -168,24 +175,33 @@ export function SpymasterView({
           isDisabled={over}
           onPress={() => void post("/turn")}
         >
-          End turn
+          {m.spy.endTurn}
         </Button>
       </div>
     </div>
   );
 }
 
-function Legend({ isDuet, className }: { isDuet: boolean; className?: string }) {
+function Legend({
+  isDuet,
+  language,
+  className,
+}: {
+  isDuet: boolean;
+  language: SpymasterGameState["language"];
+  className?: string;
+}) {
+  const s = t(language).spy;
   const classicItems = [
-    { label: "Red", className: "face-red" },
-    { label: "Blue", className: "face-blue" },
-    { label: "Neutral", className: "face-neutral" },
-    { label: "Assassin", className: "face-assassin" },
+    { label: s.legendRed, className: "face-red" },
+    { label: s.legendBlue, className: "face-blue" },
+    { label: s.legendNeutral, className: "face-neutral" },
+    { label: s.legendAssassin, className: "face-assassin" },
   ];
   const duetItems = [
-    { label: "Agent", className: "face-agent" },
-    { label: "Assassin", className: "face-assassin" },
-    { label: "Bystander", className: "face-neutral" },
+    { label: s.legendAgent, className: "face-agent" },
+    { label: s.legendAssassin, className: "face-assassin" },
+    { label: s.legendBystander, className: "face-neutral" },
   ];
   const items = isDuet ? duetItems : classicItems;
   return (

@@ -3,15 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/react";
-import type { GameMode } from "@/lib/game/types";
+import type { GameLanguage, GameMode } from "@/lib/game/types";
 
 export function CreateGameButton({
   mode = "classic",
+  language = "en",
   label,
   variant = "primary",
   fullWidth = false,
 }: {
   mode?: GameMode;
+  language?: GameLanguage;
   label?: string;
   variant?: "primary" | "secondary" | "emerald";
   fullWidth?: boolean;
@@ -25,7 +27,7 @@ export function CreateGameButton({
       const res = await fetch("/api/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode }),
+        body: JSON.stringify({ mode, language }),
       });
       if (!res.ok) throw new Error("Failed to create game");
       const { id } = (await res.json()) as { id: string };
@@ -36,7 +38,8 @@ export function CreateGameButton({
   };
 
   const defaultLabel = mode === "duet" ? "Play Duet (2 players)" : "Play Classic (4+ players)";
-  const displayLabel = loading ? "Creating…" : (label ?? defaultLabel);
+  const creatingLabel = language === "pt" ? "Criando…" : "Creating…";
+  const displayLabel = loading ? creatingLabel : (label ?? defaultLabel);
 
   if (variant === "emerald") {
     return (
@@ -67,7 +70,7 @@ export function CreateGameButton({
       onPress={() => void create()}
       fullWidth={fullWidth}
     >
-      {loading ? "Creating…" : (label ?? defaultLabel)}
+      {loading ? creatingLabel : (label ?? defaultLabel)}
     </Button>
   );
 }

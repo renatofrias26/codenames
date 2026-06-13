@@ -1,16 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { t } from "@/lib/i18n";
+import type { GameLanguage } from "@/lib/game/types";
 
 export type DisplayMode = "auto" | "tv" | "compact";
 
 const STORAGE_KEY = "codenames-display-mode";
-
-const OPTIONS: { key: DisplayMode; label: string; hint: string }[] = [
-  { key: "auto", label: "Auto", hint: "Match this screen" },
-  { key: "tv", label: "TV / Big screen", hint: "Force large layout" },
-  { key: "compact", label: "Phone", hint: "Force compact layout" },
-];
 
 function readStored(): DisplayMode {
   if (typeof window === "undefined") return "auto";
@@ -68,12 +64,20 @@ export function useDisplayMode(): [DisplayMode, (m: DisplayMode) => void] {
 export function DisplayModeMenu({
   mode,
   onChange,
+  language = "en",
 }: {
   mode: DisplayMode;
   onChange: (m: DisplayMode) => void;
+  language?: GameLanguage;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const d = t(language).display;
+  const options: { key: DisplayMode; label: string; hint: string }[] = [
+    { key: "auto", label: d.auto, hint: d.autoDesc },
+    { key: "tv", label: d.tv, hint: d.tvDesc },
+    { key: "compact", label: d.phone, hint: d.phoneDesc },
+  ];
 
   useEffect(() => {
     if (!open) return;
@@ -96,7 +100,7 @@ export function DisplayModeMenu({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        title="Display settings"
+        title={d.settings}
         aria-haspopup="menu"
         aria-expanded={open}
         className="flex items-center justify-center rounded-full border border-white/10 bg-white/5 p-1.5 text-zinc-400 transition hover:border-white/25 hover:text-zinc-200"
@@ -105,7 +109,7 @@ export function DisplayModeMenu({
           <circle cx="12" cy="12" r="3" />
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
         </svg>
-        <span className="sr-only">Display settings</span>
+        <span className="sr-only">{d.settings}</span>
       </button>
 
       {open && (
@@ -114,9 +118,9 @@ export function DisplayModeMenu({
           className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-white/10 bg-zinc-900/95 p-1 shadow-2xl shadow-black/50 backdrop-blur-md"
         >
           <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
-            Display mode
+            {d.mode}
           </p>
-          {OPTIONS.map((opt) => {
+          {options.map((opt) => {
             const active = opt.key === mode;
             return (
               <button
