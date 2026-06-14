@@ -5,6 +5,7 @@ import { Button } from "@heroui/react";
 import type { SpymasterGameState, TeamColor } from "@/lib/game/types";
 import { t } from "@/lib/i18n";
 import { usePolledState } from "./use-polled-state";
+import { useAppTheme } from "./use-app-theme";
 import { BoardGrid } from "./board-grid";
 import { ScoreBar } from "./score-bar";
 import { TimerDisplay } from "./timer-display";
@@ -35,6 +36,9 @@ export function SpymasterView({
   const timerRunning = state.timer.running;
   const isDuet = state.mode === "duet";
   const m = t(state.language);
+
+  // Retint the ambient background + card glare to match this view.
+  useAppTheme(isDuet ? "duet" : team);
   const playerLabel = isDuet
     ? team === "red"
       ? m.common.playerA

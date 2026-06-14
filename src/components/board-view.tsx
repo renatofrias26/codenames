@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { PublicGameState } from "@/lib/game/types";
 import { usePolledState } from "./use-polled-state";
+import { useAppTheme } from "./use-app-theme";
 import { BoardGrid } from "./board-grid";
 import { ScoreBar } from "./score-bar";
 import { TimerDisplay } from "./timer-display";
@@ -26,6 +27,9 @@ export function BoardView({ sessionId, initialState }: BoardViewProps) {
   );
 
   const state = data ?? initialState;
+
+  // Duet uses the green palette; classic keeps the red/blue mix.
+  useAppTheme(state.mode === "duet" ? "duet" : "classic");
 
   const [displayMode, setDisplayMode] = useDisplayMode();
   const layoutClass = useResolvedLayout(displayMode);

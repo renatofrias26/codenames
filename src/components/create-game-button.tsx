@@ -41,36 +41,27 @@ export function CreateGameButton({
   const creatingLabel = language === "pt" ? "Criando…" : "Creating…";
   const displayLabel = loading ? creatingLabel : (label ?? defaultLabel);
 
-  if (variant === "emerald") {
-    return (
-      <button
-        type="button"
-        disabled={loading}
-        onClick={() => void create()}
-        className={[
-          "flex h-11 items-center justify-center rounded-xl",
-          "bg-gradient-to-br from-emerald-400 to-emerald-600",
-          "font-semibold text-emerald-950 shadow-lg shadow-emerald-500/20",
-          "transition-all duration-200 hover:opacity-90 hover:shadow-emerald-500/30",
-          "active:scale-[0.98]",
-          fullWidth ? "w-full" : "px-6",
-          loading ? "cursor-not-allowed opacity-60" : "cursor-pointer",
-        ].join(" ")}
-      >
-        {displayLabel}
-      </button>
-    );
-  }
+  const colorClasses =
+    variant === "emerald"
+      ? "bg-gradient-to-br from-emerald-400 to-emerald-600 text-emerald-950 shadow-emerald-500/20 hover:shadow-emerald-500/30"
+      : "bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-blue-500/20 hover:shadow-blue-500/30";
 
   return (
     <Button
-      size="lg"
-      variant={variant}
-      isPending={loading}
+      type="button"
+      isDisabled={loading}
       onPress={() => void create()}
-      fullWidth={fullWidth}
+      className={[
+        "flex h-11 items-center justify-center",
+        "font-semibold shadow-lg",
+        "transition-all duration-200 hover:opacity-90",
+        "active:scale-[0.98]",
+        colorClasses,
+        fullWidth ? "w-full" : "px-6",
+        loading ? "cursor-not-allowed opacity-60" : "cursor-pointer",
+      ].join(" ")}
     >
-      {loading ? creatingLabel : (label ?? defaultLabel)}
+      {displayLabel}
     </Button>
   );
 }

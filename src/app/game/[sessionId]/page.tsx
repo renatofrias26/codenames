@@ -96,8 +96,8 @@ function QrCard({
   return (
     <div
       className={[
-        "panel flex flex-col items-center gap-4 p-6 ring-1",
-        isRed ? "ring-team-red/30" : "ring-team-blue/30",
+        "panel spin-border flex flex-col items-center gap-4 p-6 ring-1",
+        isRed ? "spin-border-red ring-team-red/30" : "spin-border-blue ring-team-blue/30",
       ].join(" ")}
     >
       <h2

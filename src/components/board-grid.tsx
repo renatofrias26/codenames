@@ -83,7 +83,7 @@ export function BoardGrid({
               isBoard
                 ? "aspect-[3/2] text-sm sm:text-xl lg:text-2xl xl:text-3xl"
                 : "aspect-[4/3] min-h-12 text-[10px] sm:text-sm",
-              clickable ? "card-tappable" : "cursor-default",
+              clickable ? "card-tappable spin-border" : "cursor-default",
               faceClasses(card, mode),
             ].join(" ")}
           >

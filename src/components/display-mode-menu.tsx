@@ -4,14 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { t } from "@/lib/i18n";
 import type { GameLanguage } from "@/lib/game/types";
 
-export type DisplayMode = "auto" | "tv" | "compact";
+export type DisplayMode = "auto" | "compact";
 
 const STORAGE_KEY = "codenames-display-mode";
 
 function readStored(): DisplayMode {
   if (typeof window === "undefined") return "auto";
   const v = window.localStorage.getItem(STORAGE_KEY);
-  return v === "tv" || v === "compact" || v === "auto" ? v : "auto";
+  // "tv" is a legacy value — treat as auto
+  return v === "compact" ? "compact" : "auto";
 }
 
 /**
@@ -23,20 +24,14 @@ export function useResolvedLayout(mode: DisplayMode): string {
 
   useEffect(() => {
     if (mode !== "auto") {
-      setLayout(mode === "tv" ? "is-tv" : "is-compact");
+      setLayout("is-compact");
       return;
     }
-    const tv = window.matchMedia("(orientation: landscape) and (min-width: 1024px)");
-    const compact = window.matchMedia("(orientation: landscape) and (max-width: 1023px)");
-    const update = () =>
-      setLayout(tv.matches ? "is-tv" : compact.matches ? "is-compact" : "is-portrait");
+    const landscape = window.matchMedia("(orientation: landscape)");
+    const update = () => setLayout(landscape.matches ? "is-compact" : "is-portrait");
     update();
-    tv.addEventListener("change", update);
-    compact.addEventListener("change", update);
-    return () => {
-      tv.removeEventListener("change", update);
-      compact.removeEventListener("change", update);
-    };
+    landscape.addEventListener("change", update);
+    return () => landscape.removeEventListener("change", update);
   }, [mode]);
 
   return layout;
@@ -75,7 +70,6 @@ export function DisplayModeMenu({
   const d = t(language).display;
   const options: { key: DisplayMode; label: string; hint: string }[] = [
     { key: "auto", label: d.auto, hint: d.autoDesc },
-    { key: "tv", label: d.tv, hint: d.tvDesc },
     { key: "compact", label: d.phone, hint: d.phoneDesc },
   ];
 

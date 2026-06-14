@@ -1,6 +1,27 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
+/*
+ * Registered custom property so browsers can interpolate/animate it smoothly.
+ * The conic-gradient border on hovered cards spins by incrementing this angle.
+ */
+@property --border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/*
+ * Aurora color tokens registered as <color> so theme switches interpolate
+ * smoothly. The gradients reference these vars, so registering them means
+ * the browser can cross-fade between palettes when `data-theme` changes.
+ */
+@property --aurora-ambient-a { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --aurora-ambient-b { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --aurora-ambient-c { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --card-glare-a { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --card-glare-b { syntax: "<color>"; inherits: true; initial-value: transparent; }
+
 :root {
   --background: #0a0c12;
   --foreground: #eef0f6;
@@ -11,6 +32,54 @@
   --team-blue-deep: #1640bd;
   --neutral: #e7d4a8;
   --assassin: #0a0a0c;
+}
+
+/* ==================================================================
+ * AURORA THEME TOKENS — tweak the whole ambient look here.
+ * ------------------------------------------------------------------
+ * Three soft colored glows orbit slowly around the screen. Geometry &
+ * timing live with the pseudo-element below; each theme only swaps the
+ * three glow COLORS (+ card glare). Activate a theme by setting
+ * `data-theme="red|blue|duet|classic"` on <html> via useAppTheme().
+ * No attribute => classic palette.
+ * ================================================================== */
+:root,
+html[data-theme="classic"] {
+  /* The three orbiting ambient glows */
+  --aurora-ambient-a: rgba(255, 90, 96, 0.22);
+  --aurora-ambient-b: rgba(93, 139, 255, 0.26);
+  --aurora-ambient-c: rgba(93, 139, 255, 0.16);
+  /* Rotating card-border glare on focus/hover */
+  --card-glare-a: rgba(255, 255, 255, 0.55);
+  --card-glare-b: rgba(255, 255, 255, 0.9);
+
+  /* Shared timing — change animation speed in one place */
+  --aurora-spin-duration: 40s;
+  --card-glare-duration: 3s;
+}
+
+html[data-theme="red"] {
+  --aurora-ambient-a: rgba(255, 90, 96, 0.32);
+  --aurora-ambient-b: rgba(176, 16, 22, 0.26);
+  --aurora-ambient-c: rgba(255, 120, 90, 0.2);
+  --card-glare-a: rgba(255, 150, 150, 0.55);
+  --card-glare-b: rgba(255, 238, 238, 0.95);
+}
+
+html[data-theme="blue"] {
+  --aurora-ambient-a: rgba(93, 139, 255, 0.32);
+  --aurora-ambient-b: rgba(22, 64, 189, 0.28);
+  --aurora-ambient-c: rgba(120, 160, 255, 0.2);
+  --card-glare-a: rgba(150, 180, 255, 0.55);
+  --card-glare-b: rgba(238, 244, 255, 0.95);
+}
+
+html[data-theme="duet"] {
+  --aurora-ambient-a: rgba(74, 222, 128, 0.28);
+  --aurora-ambient-b: rgba(16, 163, 127, 0.26);
+  --aurora-ambient-c: rgba(52, 211, 153, 0.2);
+  --card-glare-a: rgba(134, 239, 172, 0.55);
+  --card-glare-b: rgba(236, 255, 244, 0.95);
 }
 
 @theme inline {
@@ -25,17 +94,47 @@
 
 html {
   color-scheme: dark;
+  /* Solid dark base so no white flash before body paints */
+  background: var(--background);
 }
 
 body {
   min-height: 100dvh;
   color: var(--foreground);
+  /* Transparent so ::before gradient animation shows through */
+  background: transparent;
+  /* Create a stacking context so z-index: -1 pseudo-elements stay
+     strictly behind all page content and never bleed over text. */
+  isolation: isolate;
+}
+
+/*
+ * Orbiting ambient glows — three soft colored blobs slowly rotate around the
+ * screen center, like aurora light circling the room. The layer is oversized
+ * (vmax) and centered so the corners never reveal an empty edge as it spins.
+ * Glows fade to transparent over the solid html background.
+ * z-index: -1 sits above html's solid background but behind all content.
+ */
+body::before {
+  content: "";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 170vmax;
+  height: 170vmax;
+  margin: -85vmax 0 0 -85vmax;
+  z-index: -1;
+  pointer-events: none;
   background:
-    radial-gradient(1100px 720px at 12% -8%, rgba(255, 90, 96, 0.14), transparent 58%),
-    radial-gradient(1100px 720px at 88% -8%, rgba(93, 139, 255, 0.16), transparent 58%),
-    radial-gradient(900px 700px at 50% 120%, rgba(93, 139, 255, 0.08), transparent 60%),
-    var(--background);
-  background-attachment: fixed;
+    radial-gradient(80vmax 80vmax at 50% 14%, var(--aurora-ambient-a), transparent 60%),
+    radial-gradient(80vmax 38vmax at 3% 14%, var(--aurora-ambient-b), transparent 60%),
+    radial-gradient(80vmax 38vmax at 17% 64%, var(--aurora-ambient-c), transparent 60%);
+  animation: bgSpin var(--aurora-spin-duration) linear infinite;
+  transition:
+    --aurora-ambient-a 0.8s ease,
+    --aurora-ambient-b 0.8s ease,
+    --aurora-ambient-c 0.8s ease;
+  will-change: transform;
 }
 
 @layer components {
@@ -91,6 +190,76 @@ body {
     @apply cursor-pointer hover:-translate-y-0.5 hover:shadow-xl hover:ring-white/40
       active:translate-y-0 active:scale-[0.98];
   }
+
+  /*
+   * Reusable spinning gradient border. Add `spin-border` to any rounded element
+   * (card, panel, tile) and a conic-gradient ring fades in and slowly rotates
+   * around the edge on hover / focus. Works for both a focusable element itself
+   * (:focus-visible) and a card wrapping a focusable child (:focus-within).
+   *
+   * Colors come from --card-glare-a / --card-glare-b (theme-aware; override per
+   * card with .spin-border-red / -blue / -green). Thickness: --spin-border-width.
+   *
+   * Technique: padding + mask-composite carves a hollow ring so the gradient is
+   * visible only at the perimeter; no overflow issues.
+   */
+  .spin-border {
+    position: relative;
+  }
+  .spin-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: var(--spin-border-width, 2px);
+    background: conic-gradient(
+      from var(--border-angle),
+      transparent 0deg,
+      transparent 55deg,
+      var(--card-glare-a) 80deg,
+      var(--card-glare-b) 90deg,
+      var(--card-glare-a) 100deg,
+      transparent 125deg,
+      transparent 360deg
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition:
+      opacity 0.35s ease,
+      --card-glare-a 0.8s ease,
+      --card-glare-b 0.8s ease;
+    pointer-events: none;
+    animation: borderSpin var(--card-glare-duration) linear infinite;
+    animation-play-state: paused;
+  }
+  .spin-border:hover::before,
+  .spin-border:focus-visible::before,
+  .spin-border:focus-within::before {
+    opacity: 1;
+    animation-play-state: running;
+  }
+
+  /* Optional per-card color overrides for the spinning border */
+  .spin-border-red {
+    --card-glare-a: rgba(255, 150, 150, 0.6);
+    --card-glare-b: rgba(255, 238, 238, 0.95);
+  }
+  .spin-border-blue {
+    --card-glare-a: rgba(150, 180, 255, 0.6);
+    --card-glare-b: rgba(238, 244, 255, 0.95);
+  }
+  .spin-border-green {
+    --card-glare-a: rgba(134, 239, 172, 0.6);
+    --card-glare-b: rgba(236, 255, 244, 0.95);
+  }
+
   .card-done {
     @apply opacity-60 saturate-[0.85];
   }
@@ -98,6 +267,19 @@ body {
   .animate-pop {
     animation: cardPop 0.34s cubic-bezier(0.2, 0.9, 0.3, 1.2);
   }
+}
+
+/* ------------------------------------------------------------------
+ * Gradient & ambient animations
+ * ------------------------------------------------------------------ */
+
+@keyframes borderSpin {
+  to { --border-angle: 360deg; }
+}
+
+/* The whole glow layer rotates around its center, orbiting the corner colors. */
+@keyframes bgSpin {
+  to { transform: rotate(360deg); }
 }
 
 @keyframes cardPop {
@@ -252,45 +434,15 @@ body {
   width: 100%;
 }
 
-/* TV / big screen — symmetric top header layout.
-   Applied via .is-tv (forced, e.g. when mirroring a phone) OR auto-detected. */
-.board-layout.is-tv {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 1rem 1.5rem;
-  gap: 1rem;
-}
-
-/* Symmetric 3-column header: Codenames | Timer (centre) | QR codes */
-.board-layout.is-tv .board-info {
-  grid-template-columns: 1fr auto 1fr;
-  grid-template-areas:
-    "brand timer qr"
-    "score score score";
-  gap: 0.75rem 1.5rem;
-}
-
-.board-layout.is-tv .board-qr    { justify-self: end; }
-.board-layout.is-tv .board-timer { justify-content: center; }
-
-/*
- * Cap the grid so all 5 rows fit the viewport height beneath the header.
- * Keeps the board fully visible whether on a real big screen or when
- * "TV mode" is forced on a mirrored phone (short landscape viewport).
- *
- * The 5×5 grid's real aspect ratio (incl. gaps) is ~1.44, not 1.5.
- * --board-header allows for the info panel (~198px) + paddings/gap (~48px).
- */
-.board-layout.is-tv .board-grid-area > * {
-  --board-header: 16rem;
-  max-width: calc((100dvh - var(--board-header)) * 1.44);
-  width: 100%;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .animate-pop,
   .animate-fade-in-up,
-  .animate-stagger-in {
+  .animate-stagger-in,
+  .spin-border::before {
+    animation: none;
+    transition: none;
+  }
+  body::before {
     animation: none;
   }
 }
