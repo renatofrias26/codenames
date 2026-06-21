@@ -10,16 +10,33 @@ export type TimerAction = "start" | "pause" | "reset";
 // ---------------------------------------------------------------------------
 
 /**
- * Use Upstash Redis when the env vars are present (Vercel deployment).
+ * Use Upstash Redis when the REST env vars are present (Vercel deployment).
+ * Supports both the native Upstash names (UPSTASH_REDIS_REST_*) and the names
+ * injected by Vercel's Upstash/KV marketplace integration (KV_REST_API_*).
  * Fall back to the in-memory Map for local dev without KV configured.
  */
+const redisUrl =
+  process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+const redisToken =
+  process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
+
 const redis =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      })
+  redisUrl && redisToken
+    ? new Redis({ url: redisUrl, token: redisToken })
     : null;
+
+// In a serverless/multi-instance deployment the in-memory fallback is NOT
+// shared across instances: a game created on one instance is invisible to the
+// next request routed elsewhere, which surfaces as intermittent 404s (e.g. when
+// opening the QR/hub page). Warn loudly so the misconfiguration is obvious.
+if (!redis && (process.env.VERCEL || process.env.NODE_ENV === "production")) {
+  console.warn(
+    "[store] Upstash Redis is not configured (set UPSTASH_REDIS_REST_URL/" +
+      "TOKEN or KV_REST_API_URL/TOKEN). Falling back to a per-instance " +
+      "in-memory store; games will not persist across serverless instances " +
+      "and may return 404 intermittently.",
+  );
+}
 
 /** Games expire 48 hours after the last write. */
 const GAME_TTL_SECONDS = 48 * 60 * 60;
